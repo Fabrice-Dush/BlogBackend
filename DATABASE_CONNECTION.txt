@@ -1,0 +1,1 @@
+DATABASE = mongodb+srv://fabrice:fabrice2002@blogscruster.rrgvadf.mongodb.net/BlogsDatabase?retryWrites=true&w=majority&appName=BlogsCruster
