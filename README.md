@@ -60,8 +60,8 @@ project-root/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/Fabrice-Dush/BlogsBackend/DUSHIMIMANA_FABRICE_PRACTICAL_DAY_12
-   cd DUSHIMIMANA_FABRICE_PRACTICAL_DAY_12
+   git clone https://github.com/Fabrice-Dush/BlogBackend/
+   cd BlogBackend
    ```
 
 2. **Install dependencies**
