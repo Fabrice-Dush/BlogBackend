@@ -14,7 +14,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config({ path: `${__dirname}/config.env` });
+dotenv.config({ path: `${__dirname}/../../config.env` });
 
 //? Middlewares
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
