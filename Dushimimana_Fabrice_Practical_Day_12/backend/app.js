@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import blogRouter from "./routes/blogRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 import globalErrorHandler from "./middleware/globalErrorHandler.js";
 import AppError from "./utils/appError.js";
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/blogs", blogRouter);
+app.use("/api/v1/users", userRouter);
 
 app.use(function (req, res, next) {
   next(new AppError("Route not found on this server", 404));
