@@ -5,6 +5,7 @@ import {
   resetPassword,
   signup,
   updateMyPassword,
+  verifyEmail,
 } from "../controllers/authController.js";
 import { protect, restrictTo } from "../middleware/protect.js";
 import {
@@ -18,6 +19,7 @@ const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", login);
 
+router.get("/verifyEmail/:token", verifyEmail);
 router.post("/forgotPassword", forgotPassword);
 router.patch("/resetPassword/:token", resetPassword);
 router.patch("/updateMyPassword", protect, updateMyPassword);

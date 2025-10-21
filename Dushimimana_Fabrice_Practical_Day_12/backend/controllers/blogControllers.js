@@ -1,4 +1,5 @@
 import Blog from "../models/blogModel.js";
+import APIFeatures from "../utils/apiFeatures.js";
 import AppError from "../utils/appError.js";
 
 export const createBlog = async function (req, res, next) {
@@ -17,15 +18,20 @@ export const createBlog = async function (req, res, next) {
 
 export const getBlogs = async function (req, res, next) {
   try {
-    //? creating a query
-    const query = Blog.find().select("-__v");
+    //? 1. creating a query
+    const apiFeatures = new APIFeatures(Blog.find(), req.query)
+      .filtering()
+      .limitingFields()
+      .sorting()
+      .pagination();
 
-    //? Executing a query
-    const blogs = await query.find();
+    //? 2. Executing a query
+    const blogs = await apiFeatures.query;
 
     res.status(200).json({
       status: "success",
       message: "Fetched all blogs successfully",
+      results: blogs.length,
       data: { blogs },
     });
   } catch (err) {

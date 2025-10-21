@@ -1,7 +1,7 @@
-import crypto from "crypto";
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import createToken from "../utils/createToken.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -54,6 +54,8 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user", "creator"],
       default: "user",
     },
+    isVerified: { type: Boolean, default: false },
+    emailVerificationToken: String,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -102,16 +104,13 @@ userSchema.methods.passwordChangedAfter = function (tokenIssuedAt) {
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(32).toString("hex");
+  const { token, hashedToken } = createToken();
 
-  this.passwordResetToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
+  this.passwordResetToken = hashedToken;
 
   this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
 
-  return resetToken;
+  return token;
 };
 
 const User = mongoose.model("User", userSchema);
