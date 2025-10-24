@@ -49,12 +49,12 @@ export const uploadImage = function (req, res, next) {
 
 export const createBlog = async function (req, res, next) {
   try {
-    const blog = await Blog.create({ ...req.body, image: req.file?.path });
+    const blog = await Blog.create({ ...req.body, image: req.result?.url });
 
     res.status(201).json({
       status: "success",
       message: "Blog created successfully",
-      data: { blog: { ...blog, image: req.result.url } },
+      data: { blog: { ...blog._doc, image: req.result.url } },
     });
   } catch (err) {
     next(new AppError(err, 500));
@@ -86,9 +86,6 @@ export const getBlogs = async function (req, res, next) {
 
 export const getBlog = async function (req, res, next) {
   try {
-    // const { slug } = req.params;
-    // const blog = await Blog.findOne({ slug });
-
     const id = req.params.id;
     const blog = await Blog.findById(id).populate({
       path: "comments",
@@ -102,7 +99,7 @@ export const getBlog = async function (req, res, next) {
     res.status(200).json({
       status: "success",
       message: "Fetched blog successfully",
-      data: { blog },
+      data: { blog: blog._doc },
     });
   } catch (err) {
     next(new AppError(err));
@@ -111,17 +108,15 @@ export const getBlog = async function (req, res, next) {
 
 export const updateBlog = async function (req, res, next) {
   try {
-    // const { slug } = req.params;
-    // const blog = await Blog.findOneAndUpdate({ slug }, req.body, {
-    //   new: true,
-    //   runValidators: true,
-    // });
-
     const id = req.params.id;
-    const blog = await Blog.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { ...req.body, image: req.result?.url },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!blog) {
       return next(new AppError("Blog not found for the specified id", 404));
@@ -130,7 +125,7 @@ export const updateBlog = async function (req, res, next) {
     res.status(200).json({
       status: "success",
       message: "Blog updated successfully",
-      data: { blog },
+      data: { blog: { ...blog._doc, image: req.result?.url } },
     });
   } catch (err) {
     next(new AppError(err));
@@ -139,9 +134,6 @@ export const updateBlog = async function (req, res, next) {
 
 export const deleteBlog = async function (req, res, next) {
   try {
-    // const { slug } = req.params;
-    // const blog = await Blog.findOneAndDelete({ slug });
-
     const id = req.params.id;
     const blog = await Blog.findByIdAndDelete(id);
 
