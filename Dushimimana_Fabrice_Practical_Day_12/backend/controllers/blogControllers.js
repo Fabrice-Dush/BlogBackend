@@ -1,18 +1,63 @@
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 import Blog from "../models/blogModel.js";
 import APIFeatures from "../utils/apiFeatures.js";
 import AppError from "../utils/appError.js";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+
+//? make .env configuration file available
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config({ path: `${__dirname}/../../../config.env` });
+
+//? Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+//? Creating storage
+const storage = multer.diskStorage({
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+//? multer middleware
+export const uploadBlogImage = upload.single("image");
+
+//? middleware to upload image to cloudinary
+export const uploadImage = function (req, res, next) {
+  try {
+    cloudinary.uploader.upload(req.file?.path, function (err, result) {
+      if (err) throw new Error(err);
+
+      //? calling the next middleware in the middleware stack
+      req.result = result;
+      next();
+    });
+  } catch (err) {
+    next(new AppError(err));
+  }
+};
 
 export const createBlog = async function (req, res, next) {
   try {
-    const blog = await Blog.create(req.body);
+    const blog = await Blog.create({ ...req.body, image: req.file?.path });
 
     res.status(201).json({
       status: "success",
       message: "Blog created successfully",
-      data: { blog },
+      data: { blog: { ...blog, image: req.result.url } },
     });
   } catch (err) {
-    next(new AppError(err));
+    next(new AppError(err, 500));
   }
 };
 
@@ -45,7 +90,10 @@ export const getBlog = async function (req, res, next) {
     // const blog = await Blog.findOne({ slug });
 
     const id = req.params.id;
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findById(id).populate({
+      path: "comments",
+      select: "-__v",
+    });
 
     if (!blog) {
       return next(new AppError("Blog not found for the specified id", 404));

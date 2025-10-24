@@ -5,12 +5,23 @@ import {
   getBlogs,
   updateBlog,
   createBlog,
+  uploadBlogImage,
+  uploadImage,
 } from "../controllers/blogControllers.js";
 import { protect, restrictTo } from "../middleware/protect.js";
+import commentRouter from "./commentRoutes.js";
+import likeRouter from "./likeRoutes.js";
 
 const router = express.Router();
 
-router.route("/").get(getBlogs).post(protect, restrictTo("admin"), createBlog);
+//? Implementing nested routes
+router.use("/:blogId/comments", commentRouter);
+router.use("/:blogId/likes", likeRouter);
+
+router
+  .route("/")
+  .get(getBlogs)
+  .post(protect, restrictTo("admin"), uploadBlogImage, uploadImage, createBlog);
 
 // router.route("/:slug").get(getBlog).patch(updateBlog).delete(deleteBlog);
 router

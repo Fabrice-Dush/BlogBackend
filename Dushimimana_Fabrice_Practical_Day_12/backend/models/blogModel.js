@@ -50,6 +50,16 @@ const blogSchema = new mongoose.Schema(
       default: Date.now,
       select: false,
     },
+    user: {
+      ref: "User",
+      type: mongoose.Schema.ObjectId,
+    },
+    likes: [
+      {
+        ref: "User",
+        type: mongoose.Schema.ObjectId,
+      },
+    ],
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -59,10 +69,22 @@ blogSchema.virtual("id").get(function () {
   this.id = this._id;
 });
 
+//? virtual populate
+blogSchema.virtual("comments", {
+  ref: "Comment",
+  foreignField: "blog",
+  localField: "_id",
+});
+
 //? document middleware | run before any document is saved with .save() or .create
 //? used to create a slug in this case
 blogSchema.pre("save", function (next) {
   this.slug = slugify(this.title, { lower: true });
+  next();
+});
+
+blogSchema.pre(/^find/, function (next) {
+  this.populate({ path: "likes", select: "name" });
   next();
 });
 

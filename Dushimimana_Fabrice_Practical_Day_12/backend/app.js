@@ -11,6 +11,7 @@ import hpp from "hpp";
 
 import blogRouter from "./routes/blogRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import subscribeRouter from "./routes/subscriberRoutes.js";
 import globalErrorHandler from "./middleware/globalErrorHandler.js";
 import AppError from "./utils/appError.js";
 
@@ -45,7 +46,7 @@ app.use(
 );
 
 //? body parser to add body to the req.body
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json());
 
 //? serving static files
 app.use(express.static(`${__dirname}/public`));
@@ -62,15 +63,16 @@ app.use(
 
 //? testing middleware
 app.use(function (req, res, next) {
-  req.requestTime = new Date();
+  // req.requestTime = new Date();
   // console.log(req);
-  console.log(req.requestTime);
+  // console.log(req.requestTime);
   next();
 });
 
 //? routers
 app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/subscribers", subscribeRouter);
 
 //? middleware for routes which are not found
 app.use(function (req, res, next) {

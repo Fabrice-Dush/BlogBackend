@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import AppError from "../utils/appError.js";
@@ -93,10 +92,7 @@ export const login = async function (req, res, next) {
     //? 3. Check if the user has verified their email on signup
     if (!user.isVerified) {
       return next(
-        new AppError(
-          "You need to verify your account first before you login",
-          401
-        )
+        new AppError("Check your email to verify your account first", 401)
       );
     }
 
@@ -119,6 +115,7 @@ export const verifyEmail = async function (req, res, next) {
 
     //? 2. update the user document
     user.isVerified = true;
+    user.emailVerificationToken = undefined;
     await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
