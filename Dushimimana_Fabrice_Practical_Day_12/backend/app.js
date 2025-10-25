@@ -26,14 +26,14 @@ dotenv.config({ path: `${__dirname}/../../config.env` });
 
 //? Middlewares
 
+//? Allow requests from anywhere
+app.use(cors({ origin: "*" }));
+
 //? adding security headers
 app.use(helmet());
 
 //? development logging
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
-
-//? Allow requests from anywhere
-app.use(cors());
 
 //? limit the number of requests a single api can make to 100
 app.use(
