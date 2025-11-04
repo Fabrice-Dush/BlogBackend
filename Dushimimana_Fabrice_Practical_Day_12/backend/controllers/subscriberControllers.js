@@ -69,10 +69,7 @@ export const getSubscribers = async function (req, res, next) {
 };
 export const deleteSubscribe = async function (req, res, next) {
   try {
-    const filter =
-      req.user.role === "admin"
-        ? { _id: req.params.id }
-        : { user: req.user.id };
+    const filter = req.user.role === "admin" ? {} : { email: req.body.email };
 
     const subscriber = await Subscribe.findOneAndDelete(filter);
     if (!subscriber) return next(new AppError("Subscriber not found", 400));

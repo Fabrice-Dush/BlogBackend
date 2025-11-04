@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
 app.use(
   "/api",
   rateLimit({
-    limit: 100,
+    limit: 500,
     windowMs: 24 * 60 * 60 * 1000,
     message: "You made too many requests. Wait to make another after an hour",
   })

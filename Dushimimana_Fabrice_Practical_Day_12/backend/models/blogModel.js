@@ -84,7 +84,16 @@ blogSchema.pre("save", function (next) {
 });
 
 blogSchema.pre(/^find/, function (next) {
-  this.populate({ path: "likes", select: "name" });
+  this.populate({ path: "likes", select: "name" })
+    .populate({
+      path: "user",
+      select: "name email photo role",
+    })
+    .populate({
+      path: "comments",
+      select: "user comment",
+    });
+
   next();
 });
 

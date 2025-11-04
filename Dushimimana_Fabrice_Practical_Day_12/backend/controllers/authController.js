@@ -14,7 +14,7 @@ const createSendToken = function (
   res,
   user,
   statusCode = 200,
-  message = "Your account has been created successfully"
+  message = "Your account has been created successfully. Check your email for verification link"
 ) {
   const token = signToken(user);
 
@@ -37,6 +37,8 @@ const createSendToken = function (
 
 export const signup = async function (req, res, next) {
   try {
+    console.log("Welcome to the server");
+    console.log(req.body);
     //? 1. Create an email verification token
     const { token, hashedToken } = createToken();
 
@@ -46,17 +48,18 @@ export const signup = async function (req, res, next) {
       email: req.body.email,
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
-      passwordChangedAt: req.body.passwordChangedAt,
+      passwordChangedAt: req.body.passwordChangedAt ?? null,
       emailVerificationToken: hashedToken,
     });
 
     //? 3. send the email verification token to the user
     const subject = "Email verification token";
-    const message = `To verify your email click this link: ${
-      req.protocol
-    }://${req.get(
-      "host"
-    )}/api/v1/users/verifyEmail/${token}.\nIf you didn't signup to our site, then just ignore this email`;
+    // const message = `To verify your email click this link: ${
+    //   req.protocol
+    // }://${req.get(
+    //   "host"
+    // )}/api/v1/users/verifyEmail/${token}.\nIf you didn't signup to our site, then just ignore this email`;
+    const message = `To verify your email, click this link: https://blog-frontend-nu-rouge.vercel.app/verifyEmail/${token}`;
 
     const mailOptions = {
       email: user?.email,
@@ -66,8 +69,12 @@ export const signup = async function (req, res, next) {
 
     await sendEmail(mailOptions);
 
-    //? 4. Create a token and send token
-    createSendToken(res, user, 201);
+    //? 4. Send response
+    res.status(201).json({
+      status: "success",
+      message:
+        "Your account has been created successfully! Check your email for verification link",
+    });
   } catch (err) {
     next(new AppError(err));
   }
@@ -97,7 +104,13 @@ export const login = async function (req, res, next) {
     }
 
     //? 4. Create a token and send token
-    createSendToken(res, user, 200, "You're logged in successfully");
+    const token = signToken(user);
+    res.status(200).json({
+      status: "success",
+      message: "You're logged in successfully",
+      token,
+      data: { user },
+    });
   } catch (err) {
     next(new AppError(err));
   }
@@ -118,9 +131,14 @@ export const verifyEmail = async function (req, res, next) {
     user.emailVerificationToken = undefined;
     await user.save({ validateBeforeSave: false });
 
+    //? Generate token
+    const token = signToken(user);
+
     res.status(200).json({
       status: "success",
       message: "Your email is successfully verified, You can login now",
+      user,
+      token,
     });
   } catch (err) {
     next(new AppError(err));
@@ -143,9 +161,10 @@ export const forgotPassword = async function (req, res, next) {
 
     //? 4. Send token to the users email
     const subject = "Reset password token (expires in 10 minute)";
-    const message = `To reset your password, send a patch request to ${
-      req.protocol
-    }://${req.get("host")}/api/v1/users/resetPassword/${passwordResetToken}`;
+    // const message = `To reset your password, send a patch request to ${
+    //   req.protocol
+    // }://${req.get("host")}/api/v1/users/resetPassword/${passwordResetToken}`;
+    const message = `To reset your password, click this link: https://blog-frontend-nu-rouge.vercel.app/resetPassword/${passwordResetToken}`;
 
     const mailOptions = {
       email: user.email,
@@ -155,9 +174,10 @@ export const forgotPassword = async function (req, res, next) {
 
     await sendEmail(mailOptions);
 
-    res
-      .status(200)
-      .json({ status: "success", message: "Email sent successfully!" });
+    res.status(200).json({
+      status: "success",
+      message: "Check your email for password reset token",
+    });
   } catch (err) {
     next(new AppError(err, 401));
   }
@@ -189,12 +209,12 @@ export const resetPassword = async function (req, res, next) {
     await user.save();
 
     //? 4. generate a new token
-    createSendToken(
-      res,
-      user,
-      200,
-      "Use your new password next time you login"
-    );
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Your password has been reseted successfully",
+      });
   } catch (err) {
     next(new AppError(err));
   }

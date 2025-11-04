@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
     passwordResetTokenExpires: Date,
     role: {
       type: String,
-      enum: ["admin", "user", "creator"],
+      enum: ["admin", "user"],
       default: "user",
     },
     isVerified: { type: Boolean, default: false },

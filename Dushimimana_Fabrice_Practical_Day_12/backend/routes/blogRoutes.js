@@ -10,6 +10,7 @@ import {
 } from "../controllers/blogControllers.js";
 import commentRouter from "./commentRoutes.js";
 import likeRouter from "./likeRoutes.js";
+import { protect } from "../middleware/protect.js";
 
 const router = express.Router();
 
@@ -17,12 +18,15 @@ const router = express.Router();
 router.use("/:blogId/comments", commentRouter);
 router.use("/:blogId/likes", likeRouter);
 
-router.route("/").get(getBlogs).post(uploadBlogImage, uploadImage, createBlog);
+router
+  .route("/")
+  .get(getBlogs)
+  .post(protect, uploadBlogImage, uploadImage, createBlog);
 
 router
   .route("/:id")
   .get(getBlog)
-  .put(uploadBlogImage, uploadImage, updateBlog)
-  .delete(deleteBlog);
+  .put(protect, uploadBlogImage, uploadImage, updateBlog)
+  .delete(protect, deleteBlog);
 
 export default router;

@@ -49,7 +49,11 @@ export const uploadImage = function (req, res, next) {
 
 export const createBlog = async function (req, res, next) {
   try {
-    const blog = await Blog.create({ ...req.body, image: req.result?.url });
+    const blog = await Blog.create({
+      ...req.body,
+      image: req.result?.url,
+      user: req.user.id,
+    });
 
     res.status(201).json({
       status: "success",
@@ -87,10 +91,7 @@ export const getBlogs = async function (req, res, next) {
 export const getBlog = async function (req, res, next) {
   try {
     const id = req.params.id;
-    const blog = await Blog.findById(id).populate({
-      path: "comments",
-      select: "-__v",
-    });
+    const blog = await Blog.findById(id);
 
     if (!blog) {
       return next(new AppError("Blog not found for the specified id", 404));
@@ -99,7 +100,7 @@ export const getBlog = async function (req, res, next) {
     res.status(200).json({
       status: "success",
       message: "Fetched blog successfully",
-      data: { blog: blog._doc },
+      data: { blog: blog },
     });
   } catch (err) {
     next(new AppError(err));
@@ -108,9 +109,16 @@ export const getBlog = async function (req, res, next) {
 
 export const updateBlog = async function (req, res, next) {
   try {
-    const id = req.params.id;
-    const blog = await Blog.findByIdAndUpdate(
-      id,
+    //prettier-ignore
+    const filter = req.user.role !== "admin" ? 
+          {
+            _id: req.params.id,
+            user: req.user.id,
+          }
+        : { _id: req.params.id };
+
+    const blog = await Blog.findOneAndUpdate(
+      { ...filter },
       { ...req.body, image: req.result?.url },
       {
         new: true,
@@ -134,8 +142,17 @@ export const updateBlog = async function (req, res, next) {
 
 export const deleteBlog = async function (req, res, next) {
   try {
-    const id = req.params.id;
-    const blog = await Blog.findByIdAndDelete(id);
+    console.log(req.user.role);
+
+    //prettier-ignore
+    const filter = req.user.role !== "admin" ? 
+          {
+            _id: req.params.id,
+            user: req.user.id,
+          }
+        : { _id: req.params.id };
+
+    const blog = await Blog.findOneAndDelete({ ...filter });
 
     if (!blog) {
       return next(new AppError("Blog not found for the specified id", 404));

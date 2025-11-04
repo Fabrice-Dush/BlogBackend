@@ -22,6 +22,8 @@ const commentSchema = new mongoose.Schema({
   },
 });
 
+// commentSchema.index({ user: 1, blog: 1 }, { unique: true });
+
 commentSchema.pre("save", function (next) {
   this.slug = slugify(this.comment, { lower: true });
   next();
@@ -29,7 +31,6 @@ commentSchema.pre("save", function (next) {
 
 commentSchema.pre(/^find/, function (next) {
   this.populate({ path: "user", select: "name photo email" });
-
   next();
 });
 

@@ -36,7 +36,7 @@ export const getComments = async function (req, res, next) {
 export const getComment = async function (req, res, next) {
   try {
     const comment = await Comment.findOne({
-      id: req.params.id,
+      _id: req.params.id,
       user: req.user.id,
     });
 
@@ -56,8 +56,16 @@ export const getComment = async function (req, res, next) {
 
 export const updateComment = async function (req, res, next) {
   try {
+    //prettier-ignore
+    const filter = req.user.role !== "admin" ? 
+          {
+            _id: req.params.id,
+            user: req.user.id,
+          }
+        : { _id: req.params.id };
+
     const comment = await Comment.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id, blog: req.params.blogId },
+      { ...filter, blog: req.params.blogId },
       req.body,
       { new: true, runValidators: true }
     );
@@ -78,19 +86,31 @@ export const updateComment = async function (req, res, next) {
 
 export const deleteComment = async function (req, res, next) {
   try {
+    console.log(req.user.role);
+
+    //prettier-ignore
+    const filter = req.user.role !== "admin" ? 
+          {
+            _id: req.params.id,
+            user: req.user.id,
+          }
+        : { _id: req.params.id };
+
     const comment = await Comment.findOneAndDelete({
-      user: req.user.id,
-      _id: req.params.id,
+      ...filter,
+      blog: req.params.blogId,
     });
+
+    console.log(comment);
 
     if (!comment) {
       return next(new AppError("Comment not found for the specified Id", 404));
     }
 
-    res.status(204).json({
+    res.status(200).json({
       status: "success",
       message: "Comment deleted successfully",
-      data: null,
+      data: { comment },
     });
   } catch (err) {
     next(new AppError(err));

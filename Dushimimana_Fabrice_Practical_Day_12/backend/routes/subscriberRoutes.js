@@ -14,6 +14,6 @@ router
   .post(subscribeMiddleware, createSubscribe)
   .get(protect, restrictTo("admin"), getSubscribers);
 
-router.delete("/:id", protect, deleteSubscribe);
+router.delete("/unsubscribe", deleteSubscribe);
 
 export default router;

@@ -10,16 +10,16 @@ export const createLike = async function (req, res, next) {
       ? blog.likes.filter((like) => like.id !== req.user.id)
       : [...blog.likes, req.user.id];
 
+    console.log(likes);
+
     blog.likes = [...likes];
     const updatedBlog = await blog.save({ validateBeforeSave: false });
 
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "You liked this blog",
-        data: { blog: updatedBlog },
-      });
+    res.status(200).json({
+      status: "success",
+      message: "You liked this blog",
+      data: { blog: updatedBlog },
+    });
   } catch (err) {
     next(new AppError(err));
   }
